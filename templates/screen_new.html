@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}New Screen — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">Step 1 of 2</span>
+        <h1>Screen a resume against a job</h1>
+        <p class="page-sub">Upload a PDF resume, paste the job description, and we'll analyze the fit.</p>
+    </div>
+</div>
+
+<form class="screen-form card" method="POST" action="{{ url_for('screen.create') }}" enctype="multipart/form-data" id="screen-form">
+    <div class="form-grid">
+        <div class="form-block">
+            <label class="label">Session title <span class="muted">(optional)</span></label>
+            <input class="input" type="text" name="title" placeholder="e.g. Senior Data Analyst — Acme Corp" maxlength="120">
+        </div>
+
+        <div class="form-block">
+            <label class="label">Resume (PDF, max 5 MB)</label>
+            <label class="upload" for="resume">
+                <input type="file" name="resume" id="resume" accept="application/pdf" required>
+                <div class="upload-content">
+                    <div class="upload-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <div class="upload-text">
+                        <strong id="upload-label">Click to upload PDF</strong>
+                        <span class="muted">or drag and drop</span>
+                    </div>
+                </div>
+            </label>
+        </div>
+
+        <div class="form-block form-block-wide">
+            <label class="label">Job description</label>
+            <textarea class="input textarea" name="job_text" rows="14" placeholder="Paste the full job description here…" required></textarea>
+            <div class="hint">Tip: Paste the entire posting — responsibilities, requirements, qualifications. The more context, the sharper the analysis.</div>
+        </div>
+    </div>
+
+    <div class="form-footer">
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary" id="submit-btn">
+            <span class="btn-label">Analyze match</span>
+            <span class="btn-spinner" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+            </span>
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/screen.js') }}"></script>
+{% endblock %}

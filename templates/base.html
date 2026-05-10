@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="{{ url_for('dashboard.index') }}" class="brand">
+                <span class="brand-mark"></span>
+                <span class="brand-name">{{ app_name }}</span>
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard.index') }}"
+                   class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+                   Dashboard
+                </a>
+                <a href="{{ url_for('screen.new') }}"
+                   class="nav-link {% if request.endpoint in ('screen.new', 'screen.result') %}active{% endif %}">
+                   Resume screen
+                </a>
+                <a href="{{ url_for('history.index') }}"
+                   class="nav-link {% if request.endpoint == 'history.index' %}active{% endif %}">
+                   History
+                </a>
+            </div>
+
+            {% if not ai_configured %}
+            <span class="badge badge-warning" title="Set ANTHROPIC_API_KEY in .env to enable AI features">
+                AI offline
+            </span>
+            {% endif %}
+
+            <!-- Dark mode toggle -->
+            <div class="theme-toggle" id="themeToggle" role="button" aria-label="Toggle light/dark mode">
+                <span class="theme-toggle-label" id="themeLabel">Dark</span>
+                <div class="theme-switch">
+                    <div class="theme-knob"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-stack">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <span>{{ app_name }} — Capstone II</span>
+            <span class="footer-sep">·</span>
+            <span>Resume screening + interview prep</span>
+        </div>
+    </footer>
+
+    <script>
+        // Dark mode toggle — persists via localStorage
+        const body    = document.body;
+        const toggle  = document.getElementById('themeToggle');
+        const label   = document.getElementById('themeLabel');
+        const saved   = localStorage.getItem('cp_theme');
+
+        // Apply saved theme on load (default = dark)
+        if (saved === 'light') {
+            body.setAttribute('data-theme', 'light');
+            label.textContent = 'Light';
+        }
+
+        toggle.addEventListener('click', () => {
+            const current = body.getAttribute('data-theme');
+            const next    = current === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', next);
+            label.textContent = next === 'light' ? 'Light' : 'Dark';
+            localStorage.setItem('cp_theme', next);
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

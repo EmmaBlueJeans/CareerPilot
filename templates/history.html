@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}History — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-head split">
+    <div>
+        <span class="eyebrow">History</span>
+        <h1>All sessions</h1>
+        <p class="page-sub">{{ sessions|length }} session{{ '' if sessions|length == 1 else 's' }} saved on this device.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-primary" href="{{ url_for('screen.new') }}">New screen</a>
+    </div>
+</div>
+
+{% if sessions %}
+<div class="table card">
+    <div class="table-row table-head">
+        <div>Title</div>
+        <div>Resume</div>
+        <div>AI score</div>
+        <div>Interview</div>
+        <div>Date</div>
+        <div></div>
+    </div>
+    {% for s in sessions %}
+    <div class="table-row">
+        <div class="cell-title"><a href="{{ url_for('screen.result', session_id=s.id) }}">{{ s.title or 'Untitled session' }}</a></div>
+        <div class="muted">{{ s.resume_filename or '—' }}</div>
+        <div><span class="score-pill score-{{ 'high' if s.ai_score >= 70 else 'mid' if s.ai_score >= 40 else 'low' }}">{{ s.ai_score }}%</span></div>
+        <div>{% if s.interview_score is not none %}<span class="badge badge-soft">{{ s.interview_score }}/10</span>{% else %}<span class="muted">—</span>{% endif %}</div>
+        <div class="muted">{{ s.created_at[:10] }}</div>
+        <div class="cell-actions">
+            <a class="link-sm" href="{{ url_for('interview.chat', session_id=s.id) }}">Interview</a>
+            <form method="POST" action="{{ url_for('history.delete', session_id=s.id) }}" onsubmit="return confirm('Delete this session permanently?');">
+                <button type="submit" class="link-sm link-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-card">
+    <h3>Nothing saved yet</h3>
+    <p>Once you run a screening, it'll show up here so you can revisit the feedback any time.</p>
+    <a class="btn btn-primary" href="{{ url_for('screen.new') }}">Start your first screen</a>
+</div>
+{% endif %}
+{% endblock %}

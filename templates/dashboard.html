@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} — Dashboard{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <span class="eyebrow">From application to interview confidence</span>
+        <h1 class="hero-title">Land the role with <span class="gradient-text">tailored AI feedback</span></h1>
+        <p class="hero-subtitle">
+            Upload a resume and a job description. CareerPilot scores your fit,
+            spots skill gaps, and runs a mock interview tuned to the role —
+            all in one place.
+        </p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="{{ url_for('screen.new') }}">
+                Start a new screen
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+            <a class="btn btn-ghost" href="{{ url_for('history.index') }}">View history</a>
+        </div>
+    </div>
+    <div class="hero-card">
+        <div class="hero-card-header">
+            <span class="hero-card-dot"></span>
+            <span class="hero-card-dot"></span>
+            <span class="hero-card-dot"></span>
+            <span class="hero-card-title">interview.preview</span>
+        </div>
+        <div class="hero-card-body">
+            <div class="chat-bubble assistant">
+                Walk me through how you used SQL window functions in your last
+                project — what problem were you solving?
+            </div>
+            <div class="chat-bubble user">
+                Sure, we needed running totals across customer cohorts so I built…
+            </div>
+            <div class="hero-card-meter">
+                <span>Match score</span>
+                <strong>78<span class="muted">%</span></strong>
+                <div class="meter"><div class="meter-fill" style="width:78%"></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon icon-blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <h3>Smart resume screening</h3>
+        <p>Two-stage analysis combines NLP keyword matching with Claude reasoning to surface real fit, not just keyword overlap.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon icon-purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Targeted mock interviews</h3>
+        <p>Practice with an interviewer that knows your resume, the JD, and your gaps — questions go straight at what matters.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon icon-green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3>Track your progress</h3>
+        <p>Every session is saved locally. Compare scores across roles, revisit feedback, and see where you've improved.</p>
+    </div>
+</section>
+
+{% if sessions %}
+<section class="recent">
+    <div class="section-header">
+        <h2>Recent sessions</h2>
+        <a class="link" href="{{ url_for('history.index') }}">See all →</a>
+    </div>
+    <div class="session-grid">
+        {% for s in sessions %}
+        <a class="session-card" href="{{ url_for('screen.result', session_id=s.id) }}">
+            <div class="session-card-top">
+                <span class="score-pill score-{{ 'high' if s.ai_score >= 70 else 'mid' if s.ai_score >= 40 else 'low' }}">{{ s.ai_score }}%</span>
+                {% if s.interview_score is not none %}
+                <span class="badge badge-soft">Interview {{ s.interview_score }}/10</span>
+                {% endif %}
+            </div>
+            <h4 class="session-title">{{ s.title or 'Untitled session' }}</h4>
+            <p class="session-meta">{{ s.resume_filename or '—' }} · {{ s.created_at[:10] }}</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+<section class="empty">
+    <div class="empty-card">
+        <h3>No sessions yet</h3>
+        <p>Run your first screening to see how your resume stacks up against a real job description.</p>
+        <a class="btn btn-primary" href="{{ url_for('screen.new') }}">Start your first screen</a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

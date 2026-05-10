@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% block title %}Results — {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="page-head split">
+    <div>
+        <span class="eyebrow">Screening result</span>
+        <h1>{{ session.title }}</h1>
+        <p class="page-sub">{{ session.resume_filename }} · saved {{ session.created_at[:16].replace('T', ' ') }}</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-ghost" href="{{ url_for('screen.new') }}">New screen</a>
+        <a class="btn btn-primary" href="{{ url_for('interview.chat', session_id=session.id) }}">
+            {% if interview_started %}Continue interview{% else %}Practice interview{% endif %}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+    </div>
+</div>
+
+<div class="result-grid">
+
+    {# ── Verdict banner ── #}
+    {% set vc = (session.verdict or 'unknown') | replace(' ', '-') | lower %}
+    {% if vc == 'strong-pass' %}{% set vicon = '✓' %}{% set vhead = 'Strong pass — likely reaches a recruiter' %}
+    {% elif vc == 'pass' %}{% set vicon = '✓' %}{% set vhead = 'Pass — well-positioned for this role' %}
+    {% elif vc == 'marginal' %}{% set vicon = '〜' %}{% set vhead = 'Marginal — may pass depending on competition' %}
+    {% elif vc == 'at-risk' %}{% set vicon = '!' %}{% set vhead = 'At risk — likely filtered before a recruiter sees it' %}
+    {% elif vc == 'knockout' %}{% set vicon = '✗' %}{% set vhead = 'Knockout — missing core requirements' %}
+    {% else %}{% set vicon = '?' %}{% set vhead = 'Analysis complete' %}
+    {% endif %}
+
+    <div class="verdict-banner {{ vc }}">
+        <div class="verdict-icon">{{ vicon }}</div>
+        <div class="verdict-body">
+            <div class="verdict-label">ATS verdict</div>
+            <div class="verdict-heading">{{ vhead }}</div>
+            {% if session.verdict_reason %}
+            <div class="verdict-reason">{{ session.verdict_reason }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Score tiles ── #}
+    <div class="card result-scores">
+        <div class="score-block">
+            <span class="label-sm">Final score</span>
+            <div class="score-row">
+                <strong class="score-num {{ 'score-high' if session.ai_score >= 70 else 'score-mid' if session.ai_score >= 50 else 'score-low' }}">
+                    {{ session.ai_score }}<span class="muted">%</span>
+                </strong>
+                <span class="score-pill {{ 'score-high' if session.ai_score >= 70 else 'score-mid' if session.ai_score >= 50 else 'score-low' }}">
+                    weighted overall
+                </span>
+            </div>
+            <div class="meter {{ 'meter-success' if session.ai_score >= 70 else 'meter-warning' if session.ai_score >= 50 else 'meter-danger' }}">
+                <div class="meter-fill" style="width: {{ session.ai_score }}%"></div>
+            </div>
+        </div>
+
+        <div class="score-block">
+            <span class="label-sm">Required skills</span>
+            <div class="score-row">
+                <strong class="score-num {{ 'score-high' if (session.required_score or 0) >= 80 else 'score-mid' if (session.required_score or 0) >= 60 else 'score-low' }}">
+                    {{ session.required_matched or 0 }}<span class="muted">/{{ session.required_total or 0 }}</span>
+                </strong>
+            </div>
+            <div class="meter {{ 'meter-success' if (session.required_score or 0) >= 70 else 'meter-warning' if (session.required_score or 0) >= 50 else 'meter-danger' }}">
+                <div class="meter-fill" style="width: {{ session.required_score or 0 }}%"></div>
+            </div>
+            <span class="label-sm">{{ session.required_score or 0 }}% matched</span>
+        </div>
+
+        <div class="score-block">
+            <span class="label-sm">Preferred skills</span>
+            <div class="score-row">
+                <strong class="score-num {{ 'score-high' if (session.preferred_score or 0) >= 60 else 'score-mid' if (session.preferred_score or 0) >= 40 else 'score-low' }}">
+                    {{ session.preferred_matched or 0 }}<span class="muted">/{{ session.preferred_total or 0 }}</span>
+                </strong>
+            </div>
+            <div class="meter {{ 'meter-success' if (session.preferred_score or 0) >= 60 else 'meter-warning' if (session.preferred_score or 0) >= 40 else 'meter-danger' }}">
+                <div class="meter-fill" style="width: {{ session.preferred_score or 0 }}%"></div>
+            </div>
+            <span class="label-sm">{{ session.preferred_score or 0 }}% matched</span>
+        </div>
+
+        <div class="score-block">
+            <span class="label-sm">Keyword score</span>
+            <div class="score-row">
+                <strong class="score-num">{{ session.keyword_score }}<span class="muted">%</span></strong>
+            </div>
+            <div class="meter meter-secondary">
+                <div class="meter-fill" style="width: {{ session.keyword_score }}%"></div>
+            </div>
+        </div>
+
+        {% if summary %}
+        <div class="score-block">
+            <span class="label-sm">Mock interview</span>
+            <div class="score-row">
+                <strong class="score-num">{{ summary.score }}<span class="muted">/10</span></strong>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── Formatting warnings ── #}
+    {% if session.formatting_flags %}
+    <div class="card result-full" style="border-color: rgba(248,113,113,0.35);">
+        <h3 class="card-title" style="color: var(--danger);">
+            <span class="title-dot" style="background: var(--danger);"></span>
+            ⚠ Formatting warnings
+        </h3>
+        <p class="muted" style="font-size:13px; margin-bottom:12px;">
+            These issues may prevent ATS systems from reading your resume correctly — fix these first.
+        </p>
+        <ul class="suggestion-list">
+            {% for flag in session.formatting_flags %}
+            <li style="border-color: rgba(248,113,113,0.2); background: var(--danger-bg);">{{ flag }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {# ── Required skills ── #}
+    <div class="card">
+        <h3 class="card-title">
+            <span class="title-dot"></span>
+            Required skills
+        </h3>
+        <p class="muted" style="font-size:13px; margin-bottom:12px;">
+            Must-have skills from the job description. Missing any of these significantly lowers your ATS ranking.
+        </p>
+
+        {% if session.required_present %}
+        <div class="bucket-header">
+            <span class="bucket-label">Present</span>
+            <span class="count-pill">{{ session.required_present | length }}</span>
+        </div>
+        <div class="chip-row" style="margin-bottom: 12px;">
+            {% for s in session.required_present %}
+            <span class="chip chip-success">{{ s }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if session.required_missing %}
+        <div class="bucket-header">
+            <span class="bucket-label" style="color: var(--danger);">Missing</span>
+            <span class="count-pill" style="background: var(--danger-bg); color: var(--danger);">{{ session.required_missing | length }}</span>
+        </div>
+        <div class="chip-row">
+            {% for s in session.required_missing %}
+            <span class="chip chip-danger">{{ s }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if not session.required_present and not session.required_missing %}
+        <p class="muted">No required skills identified from this job description.</p>
+        {% endif %}
+    </div>
+
+    {# ── Preferred skills ── #}
+    <div class="card">
+        <h3 class="card-title">
+            <span class="title-dot"></span>
+            Preferred skills
+        </h3>
+        <p class="muted" style="font-size:13px; margin-bottom:12px;">
+            Nice-to-have skills. These improve your ranking but won't filter you out if missing.
+        </p>
+
+        {% if session.preferred_present %}
+        <div class="bucket-header">
+            <span class="bucket-label">Present</span>
+            <span class="count-pill">{{ session.preferred_present | length }}</span>
+        </div>
+        <div class="chip-row" style="margin-bottom: 12px;">
+            {% for s in session.preferred_present %}
+            <span class="chip chip-soft">{{ s }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if session.preferred_missing %}
+        <div class="bucket-header">
+            <span class="bucket-label" style="color: var(--warning);">Missing</span>
+            <span class="count-pill" style="background: var(--warning-bg); color: var(--warning);">{{ session.preferred_missing | length }}</span>
+        </div>
+        <div class="chip-row">
+            {% for s in session.preferred_missing %}
+            <span class="chip chip-warning">{{ s }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── Implied skills ── #}
+    {% if session.implied_skills %}
+    <div class="card result-full">
+        <h3 class="card-title">
+            <span class="title-dot"></span>
+            Implied skills
+            <span class="muted" style="font-size:12px; font-weight:400; text-transform:none; letter-spacing:0;">
+                — present in your experience but not as exact keywords
+            </span>
+        </h3>
+        {% for item in session.implied_skills %}
+            {% if item is mapping %}
+            <div class="implied-row">
+                <span class="chip chip-soft" style="flex-shrink:0;">{{ item.skill }}</span>
+                <span class="implied-action">{{ item.action }}</span>
+            </div>
+            {% else %}
+            <div class="implied-row">
+                <span class="chip chip-soft" style="flex-shrink:0;">{{ item }}</span>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Title + experience alignment ── #}
+    {% if session.title_alignment or session.experience_note %}
+    <div class="card result-full">
+        <h3 class="card-title">
+            <span class="title-dot"></span>
+            Title &amp; experience alignment
+        </h3>
+        <div class="alignment-grid">
+            {% if session.title_alignment %}
+            <div class="alignment-box">
+                <div class="alignment-box-label">Title match</div>
+                <div class="alignment-box-val">{{ session.title_alignment }}</div>
+            </div>
+            {% endif %}
+            {% if session.experience_note %}
+            <div class="alignment-box">
+                <div class="alignment-box-label">Experience</div>
+                <div class="alignment-box-val">{{ session.experience_note }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── AI assessment ── #}
+    {% if session.ai_assessment %}
+    <div class="card result-full">
+        <h3 class="card-title">
+            <span class="title-dot"></span>
+            AI assessment
+        </h3>
+        <p class="prose">{{ session.ai_assessment }}</p>
+    </div>
+    {% endif %}
+
+    {# ── Language quality ── #}
+    {% if session.language_flags %}
+    <div class="card result-full" style="border-color: rgba(251,191,36,0.3);">
+        <h3 class="card-title" style="color: var(--warning);">
+            <span class="title-dot" style="background: var(--warning);"></span>
+            Language quality
+        </h3>
+        <p class="muted" style="font-size:13px; margin-bottom:14px;">
+            These won't affect your ATS score but will hurt your chances with a human recruiter. Here's exactly what to change.
+        </p>
+        {% for item in session.language_flags %}
+            {% if item is mapping %}
+            <div class="lang-flag">
+                <div class="lang-flag-issue">{{ item.issue }}</div>
+                <div class="lang-before-after">
+                    <div class="lang-before">
+                        <div class="lang-ba-label">Original</div>
+                        <div class="lang-ba-text">{{ item.original }}</div>
+                    </div>
+                    <div class="lang-after">
+                        <div class="lang-ba-label">Stronger version</div>
+                        <div class="lang-ba-text">{{ item.rewrite }}</div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="lang-flag">
+                <div class="lang-ba-text">{{ item }}</div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Suggestions ── #}
+    {% if session.suggestions %}
+    <div class="card result-full">
+        <h3 class="card-title">
+            <span class="title-dot"></span>
+            Targeted suggestions
+        </h3>
+        <ul class="suggestion-list">
+            {% for s in session.suggestions %}<li>{{ s }}</li>{% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {# ── Mock interview summary (if completed) ── #}
+    {% if summary %}
+    <div class="card result-full">
+        <h3 class="card-title">
+            <span class="title-dot"></span>
+            Mock interview summary
+        </h3>
+        <p class="prose">{{ summary.summary }}</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

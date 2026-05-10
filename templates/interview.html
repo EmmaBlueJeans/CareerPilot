@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Interview — {{ session.title }}{% endblock %}
+
+{% block content %}
+<div class="page-head split">
+    <div>
+        <span class="eyebrow">Mock interview</span>
+        <h1>{{ session.title }}</h1>
+        <p class="page-sub">
+            {{ question_target }} questions · tailored to your resume and the JD
+            {% if session.missing_skills %}· focus on <span class="muted">{{ session.missing_skills[:3]|join(", ") }}</span>{% endif %}
+        </p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-ghost" href="{{ url_for('screen.result', session_id=session.id) }}">Back to results</a>
+        <form method="POST" action="{{ url_for('interview.reset', session_id=session.id) }}" onsubmit="return confirm('Reset this interview? All chat will be lost.');">
+            <button class="btn btn-ghost" type="submit">Reset</button>
+        </form>
+    </div>
+</div>
+
+<div class="chat-shell card" id="chat-shell" data-session-id="{{ session.id }}" data-already-started="{{ '1' if messages else '0' }}">
+    <div class="chat-stream" id="chat-stream">
+        {% for m in messages %}
+            <div class="chat-bubble {{ m.role }}">{{ m.content }}</div>
+        {% endfor %}
+    </div>
+
+    {% if summary %}
+    <div class="chat-summary">
+        <div class="chat-summary-row">
+            <span class="label-sm">Interview complete</span>
+            <strong class="score-num">{{ summary.score }}<span class="muted">/10</span></strong>
+        </div>
+        <p class="prose">{{ summary.summary }}</p>
+    </div>
+    {% endif %}
+
+    <form class="chat-form" id="chat-form" {% if summary %}hidden{% endif %}>
+        <textarea id="chat-input" placeholder="Type your answer…" rows="2" autocomplete="off"></textarea>
+        <button type="submit" class="btn btn-primary" id="send-btn">
+            <span class="btn-label">Send</span>
+            <span class="btn-spinner" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+            </span>
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+{% endblock %}
