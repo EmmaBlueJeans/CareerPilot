@@ -68,6 +68,13 @@ def _load_spacy():
     global _spacy_pipeline
     if _spacy_pipeline is not None:
         return _spacy_pipeline
+    
+    # Allow disabling spaCy via env var (e.g. on memory-constrained hosting)
+    import os
+    if os.environ.get("DISABLE_SPACY"):
+        _spacy_pipeline = False
+        return False
+    
     try:
         import spacy
         from spacy.matcher import PhraseMatcher
