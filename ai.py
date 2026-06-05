@@ -156,13 +156,13 @@ def enrich_screen(resume_text, job_text, keyword_score, matched, missing):
     """
     client = get_client()
 
-    user = f"""RESUME TEXT:
-{resume_text[:4000]}
+    user = f"""JOB DESCRIPTION:
+{job_text[:2000]}
 
 ---
 
-JOB DESCRIPTION:
-{job_text[:2000]}
+RESUME TEXT:
+{resume_text[:4000]}
 
 ---
 
