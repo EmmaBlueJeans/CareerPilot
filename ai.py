@@ -45,6 +45,22 @@ Nice-to-have sections, or soft skills without must-language.
 
 When unclear, default to preferred.
 
+CRITICAL — Only classify actual skills, tools, technologies, and 
+competencies. Do NOT classify the following as skills under any 
+circumstances:
+- Citizenship or work authorization requirements (e.g. "US Citizen", 
+  "must be authorized to work in the US")
+- Security clearance requirements (e.g. "Secret clearance required")
+- Education requirements (e.g. "Bachelor's degree required")  
+- Years of experience minimums (e.g. "5+ years required")
+- Physical requirements or location requirements
+- Salary or compensation information
+
+These are eligibility gates, not skills. If they appear in the JD, 
+mention them only in verdict_reason if they are relevant to the 
+overall assessment — do not include them in required_skills or 
+preferred_skills lists.
+
 For each skill, check whether the resume demonstrates it — either
 explicitly (exact keyword) or implicitly ("automated monthly reports"
 counts as ETL, "presented findings to leadership" counts as stakeholder
@@ -161,6 +177,7 @@ and return your full JSON analysis."""
     response = get_client().messages.create(
         model=config.SCREEN_MODEL,
         max_tokens=2000,
+        temperature=0,
         system=SCREEN_SYSTEM,
         messages=[{"role": "user", "content": user}],
     )
