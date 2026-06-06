@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Interview — {{ session.title }}{% endblock %}
 
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="page-head split">
     <div>
@@ -22,7 +26,7 @@
 <div class="chat-shell card" id="chat-shell" data-session-id="{{ session.id }}" data-already-started="{{ '1' if messages else '0' }}">
     <div class="chat-stream" id="chat-stream">
         {% for m in messages %}
-            <div class="chat-bubble {{ m.role }}">{{ m.content }}</div>
+            <div class="chat-bubble {{ m.role }} markdown-body" data-content="{{ m.content | e }}"></div>
         {% endfor %}
     </div>
 
@@ -50,4 +54,40 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script>
+  // Configure marked for safe inline rendering
+  marked.setOptions({
+    breaks: true,      // converts \n to <br>
+    gfm: true,         // GitHub flavored markdown
+  });
+
+  // Render existing bubbles on page load
+  document.querySelectorAll('.chat-bubble[data-content]').forEach(bubble => {
+    bubble.innerHTML = marked.parse(bubble.dataset.content);
+  });
+
+  // Override the bubble creation in interview.js
+  // We need to intercept new bubbles added dynamically too
+  const originalAppendBubble = window.appendBubble;
+  
+  // Patch: after interview.js runs, re-render any new bubbles
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(node => {
+        if (node.classList && node.classList.contains('chat-bubble')) {
+          if (node.dataset.content) {
+            node.innerHTML = marked.parse(node.dataset.content);
+          } else if (node.textContent) {
+            // Bubble was added with text content directly
+            node.innerHTML = marked.parse(node.textContent);
+            node.textContent = '';
+          }
+        }
+      });
+    });
+  });
+
+  observer.observe(document.getElementById('chat-stream'), { childList: true });
+</script>
 {% endblock %}

@@ -13,10 +13,16 @@
         stream.scrollTop = stream.scrollHeight;
     }
 
+    function renderExisting() {
+    document.querySelectorAll('.chat-bubble[data-content]').forEach(el => {
+        el.innerHTML = marked.parse(el.dataset.content);
+    });
+}
+
     function bubble(role, content) {
         const div = document.createElement('div');
         div.className = 'chat-bubble ' + role;
-        div.textContent = content;
+        div.innerHTML = marked.parse(content);
         return div;
     }
 
@@ -119,4 +125,6 @@
     } else {
         start();
     }
+
+    renderExisting();
 })();

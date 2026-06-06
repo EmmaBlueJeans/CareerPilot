@@ -6,6 +6,9 @@ from blueprints.dashboard import bp as dashboard_bp
 from blueprints.screen import bp as screen_bp
 from blueprints.interview import bp as interview_bp
 from blueprints.history import bp as history_bp
+from flask_login import LoginManager
+from blueprints.auth import bp as auth_bp, UserObject
+
 
 
 def create_app():
@@ -13,13 +16,27 @@ def create_app():
     app.config["SECRET_KEY"] = config.FLASK_SECRET_KEY
     app.config["MAX_CONTENT_LENGTH"] = config.MAX_PDF_BYTES + 1024 * 1024
 
+    # ── Flask-Login setup ──────────────────────────────────────────────
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"
+    login_manager.login_message = "Please log in to use CareerPilot."
+    login_manager.login_message_category = "error"
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        user_dict = db.get_user_by_id(int(user_id))
+        return UserObject(user_dict) if user_dict else None
+
     db.init_db()
     app.teardown_appcontext(db.close_conn)
 
+    # Register blueprints
+    app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(dashboard_bp)
-    app.register_blueprint(screen_bp, url_prefix="/screen")
+    app.register_blueprint(screen_bp,    url_prefix="/screen")
     app.register_blueprint(interview_bp, url_prefix="/interview")
-    app.register_blueprint(history_bp, url_prefix="/history")
+    app.register_blueprint(history_bp,   url_prefix="/history")
 
     @app.before_request
     def ensure_user_token():

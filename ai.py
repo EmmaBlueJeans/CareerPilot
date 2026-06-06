@@ -280,7 +280,9 @@ SCREENING SIGNAL:
 - Verdict from ATS screen: {session_data.get("verdict") or "not screened"}
 
 GUIDELINES:
-- Open by greeting the candidate warmly and asking ONE question rooted in their resume.
+- Open by greeting the candidate warmly with 1-2 sentences, then add a blank line, then ask ONE question on its own line rooted in their resume.
+- Always separate your greeting from your question with a blank line so they are visually distinct.
+- Format your question in bold using **like this**.
 - Ask exactly one question per turn. Keep replies short (2-4 sentences).
 - Briefly acknowledge their previous answer before asking the next question.
 - Bias questions toward the gaps and the JD's core requirements.

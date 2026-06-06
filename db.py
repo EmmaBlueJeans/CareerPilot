@@ -41,7 +41,7 @@ def create_session(user_token, payload):
     with transaction() as conn:
         cur = conn.execute(
             """INSERT INTO sessions (
-                user_token, title, resume_filename, resume_text, job_text,
+                user_token, user_id, title, resume_filename, resume_text, job_text,
                 keyword_score,
                 ai_score, required_score, preferred_score,
                 required_matched, required_total,
@@ -55,7 +55,7 @@ def create_session(user_token, payload):
                 verdict, verdict_reason,
                 ai_assessment, suggestions
             ) VALUES (
-                ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?,
                 ?,
                 ?, ?, ?,
                 ?, ?,
@@ -71,6 +71,7 @@ def create_session(user_token, payload):
             )""",
             (
                 user_token,
+                payload.get("user_id"),
                 payload.get("title"),
                 payload.get("resume_filename"),
                 payload.get("resume_text"),
@@ -117,16 +118,27 @@ def get_session(session_id, user_token):
     return _hydrate_session(row) if row else None
 
 
-def list_sessions(user_token, limit=50):
-    rows = get_conn().execute(
-        """SELECT s.*, sm.score AS interview_score, sm.completed_at AS interview_completed_at
-           FROM sessions s
-           LEFT JOIN interview_summary sm ON sm.session_id = s.id
-           WHERE s.user_token = ?
-           ORDER BY s.created_at DESC
-           LIMIT ?""",
-        (user_token, limit),
-    ).fetchall()
+def list_sessions(user_token, limit=50, user_id=None):
+    if user_id:
+        rows = get_conn().execute(
+            """SELECT s.*, sm.score AS interview_score, sm.completed_at AS interview_completed_at
+               FROM sessions s
+               LEFT JOIN interview_summary sm ON sm.session_id = s.id
+               WHERE s.user_id = ?
+               ORDER BY s.created_at DESC
+               LIMIT ?""",
+            (user_id, limit),
+        ).fetchall()
+    else:
+        rows = get_conn().execute(
+            """SELECT s.*, sm.score AS interview_score, sm.completed_at AS interview_completed_at
+               FROM sessions s
+               LEFT JOIN interview_summary sm ON sm.session_id = s.id
+               WHERE s.user_token = ?
+               ORDER BY s.created_at DESC
+               LIMIT ?""",
+            (user_token, limit),
+        ).fetchall()
     return [_hydrate_session(r) for r in rows]
 
 
@@ -192,6 +204,47 @@ _JSON_FIELDS = (
     "suggestions",
 )
 
+# ── User account functions ─────────────────────────────────────────────────
+
+def create_user(email, password_hash):
+    """Create a new user account. Returns user id or None if email taken."""
+    try:
+        with transaction() as conn:
+            cur = conn.execute(
+                "INSERT INTO users (email, password_hash) VALUES (?, ?)",
+                (email.lower().strip(), password_hash)
+            )
+            return cur.lastrowid
+    except sqlite3.IntegrityError:
+        return None  # email already exists
+
+
+def get_user_by_email(email):
+    """Look up a user by email address."""
+    row = get_conn().execute(
+        "SELECT * FROM users WHERE email = ?",
+        (email.lower().strip(),)
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def get_user_by_id(user_id):
+    """Look up a user by id — used by Flask-Login."""
+    row = get_conn().execute(
+        "SELECT * FROM users WHERE id = ?",
+        (user_id,)
+    ).fetchone()
+    return dict(row) if row else None
+
+
+def update_create_session_user(session_id, user_id):
+    """Link an existing session to a user account."""
+    with transaction() as conn:
+        conn.execute(
+            "UPDATE sessions SET user_id = ? WHERE id = ?",
+            (user_id, session_id)
+        )
+
 
 def _hydrate_session(row):
     if not row:
@@ -203,3 +256,5 @@ def _hydrate_session(row):
         except (TypeError, json.JSONDecodeError):
             d[key] = []
     return d
+
+   

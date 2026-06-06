@@ -12,41 +12,60 @@
 </head>
 <body>
     <nav class="nav">
-        <div class="nav-inner">
-            <a href="{{ url_for('dashboard.index') }}" class="brand">
-                <span class="brand-mark"></span>
-                <span class="brand-name">{{ app_name }}</span>
+    <div class="nav-inner">
+        <a href="{{ url_for('dashboard.index') if current_user.is_authenticated else url_for('auth.login') }}" class="brand">
+            <span class="brand-mark"></span>
+            <span class="brand-name">{{ app_name }}</span>
+        </a>
+
+        <div class="nav-links">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard.index') }}"
+               class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+               Dashboard
             </a>
-            <div class="nav-links">
-                <a href="{{ url_for('dashboard.index') }}"
-                   class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
-                   Dashboard
-                </a>
-                <a href="{{ url_for('screen.new') }}"
-                   class="nav-link {% if request.endpoint in ('screen.new', 'screen.result') %}active{% endif %}">
-                   Resume screen
-                </a>
-                <a href="{{ url_for('history.index') }}"
-                   class="nav-link {% if request.endpoint == 'history.index' %}active{% endif %}">
-                   History
-                </a>
-            </div>
-
-            {% if not ai_configured %}
-            <span class="badge badge-warning" title="Set ANTHROPIC_API_KEY in .env to enable AI features">
-                AI offline
-            </span>
+            <a href="{{ url_for('screen.new') }}"
+               class="nav-link {% if request.endpoint in ('screen.new', 'screen.result') %}active{% endif %}">
+               Resume screen
+            </a>
+            <a href="{{ url_for('history.index') }}"
+               class="nav-link {% if request.endpoint == 'history.index' %}active{% endif %}">
+               History
+            </a>
             {% endif %}
+        </div>
 
-            <!-- Dark mode toggle -->
-            <div class="theme-toggle" id="themeToggle" role="button" aria-label="Toggle light/dark mode">
-                <span class="theme-toggle-label" id="themeLabel">Dark</span>
-                <div class="theme-switch">
-                    <div class="theme-knob"></div>
-                </div>
+        {% if current_user.is_authenticated %}
+        <span style="font-size:13px; color:var(--text-2); margin-left:8px;">
+            {{ current_user.email }}
+        </span>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost" style="font-size:13px; padding:6px 12px;">
+            Log out
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-ghost" style="font-size:13px; padding:6px 12px; margin-left:8px;">
+            Log in
+        </a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="font-size:13px; padding:6px 12px;">
+            Sign up
+        </a>
+        {% endif %}
+
+        {% if not ai_configured %}
+        <span class="badge badge-warning" title="Set ANTHROPIC_API_KEY in .env to enable AI features">
+            AI offline
+        </span>
+        {% endif %}
+
+        <div class="theme-toggle" id="themeToggle" role="button" aria-label="Toggle light/dark mode">
+            <span class="theme-toggle-label" id="themeLabel">Dark</span>
+            <div class="theme-switch">
+                <div class="theme-knob"></div>
             </div>
         </div>
-    </nav>
+
+    </div>
+</nav>
 
     <main class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}

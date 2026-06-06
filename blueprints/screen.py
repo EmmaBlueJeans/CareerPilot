@@ -4,16 +4,19 @@ import ai
 import pdf_utils
 import nlp_utils
 import config
+from flask_login import login_required, current_user
 
 bp = Blueprint("screen", __name__)
 
 
 @bp.route("/", methods=["GET"])
+@login_required
 def new():
     return render_template("screen_new.html")
 
 
 @bp.route("/", methods=["POST"])
+@login_required
 def create():
     job_text = (request.form.get("job_text") or "").strip()
     title    = (request.form.get("title")    or "").strip() or None
@@ -82,6 +85,7 @@ def create():
 
     session_id = db.create_session(g.user_token, {
         "title":             title or _derive_title(job_text),
+        "user_id":           current_user.id,
         "resume_filename":   file.filename,
         "resume_text":       resume_text,
         "job_text":          job_text,
@@ -119,6 +123,7 @@ def create():
 
 
 @bp.route("/<int:session_id>")
+@login_required
 def result(session_id):
     session = db.get_session(session_id, g.user_token)
     if not session:

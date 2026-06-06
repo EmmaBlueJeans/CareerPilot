@@ -1,0 +1,92 @@
+import bcrypt
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
+import db
+
+bp = Blueprint("auth", __name__)
+
+
+class UserObject:
+    """Simple user class Flask-Login needs."""
+    def __init__(self, user_dict):
+        self.id = user_dict["id"]
+        self.email = user_dict["email"]
+        self.is_authenticated = True
+        self.is_active = True
+        self.is_anonymous = False
+
+    def get_id(self):
+        return str(self.id)
+
+
+@bp.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard.index"))
+
+    if request.method == "POST":
+        email    = (request.form.get("email")    or "").strip()
+        password = (request.form.get("password") or "").strip()
+        confirm  = (request.form.get("confirm")  or "").strip()
+
+        if not email or not password:
+            flash("Email and password are required.", "error")
+            return render_template("auth/register.html")
+
+        if password != confirm:
+            flash("Passwords do not match.", "error")
+            return render_template("auth/register.html")
+
+        if len(password) < 8:
+            flash("Password must be at least 8 characters.", "error")
+            return render_template("auth/register.html")
+
+        password_hash = bcrypt.hashpw(
+            password.encode("utf-8"), bcrypt.gensalt()
+        ).decode("utf-8")
+
+        user_id = db.create_user(email, password_hash)
+        if user_id is None:
+            flash("An account with that email already exists.", "error")
+            return render_template("auth/register.html")
+
+        user_dict = db.get_user_by_id(user_id)
+        login_user(UserObject(user_dict))
+        flash("Account created! Welcome to CareerPilot.", "success")
+        return redirect(url_for("dashboard.index"))
+
+    return render_template("auth/register.html")
+
+
+@bp.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard.index"))
+
+    if request.method == "POST":
+        email    = (request.form.get("email")    or "").strip()
+        password = (request.form.get("password") or "").strip()
+
+        user_dict = db.get_user_by_email(email)
+        if not user_dict:
+            flash("No account found with that email.", "error")
+            return render_template("auth/login.html")
+
+        if not bcrypt.checkpw(
+            password.encode("utf-8"),
+            user_dict["password_hash"].encode("utf-8")
+        ):
+            flash("Incorrect password.", "error")
+            return render_template("auth/login.html")
+
+        login_user(UserObject(user_dict))
+        return redirect(url_for("dashboard.index"))
+
+    return render_template("auth/login.html")
+
+
+@bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("auth.login"))

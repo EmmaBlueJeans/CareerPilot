@@ -475,6 +475,12 @@ body[data-theme="light"] .theme-knob { left: 20px; }
 .chat-bubble.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); animation: dot 1.2s infinite ease-in-out; }
 .chat-bubble.typing span:nth-child(2) { animation-delay: 0.15s; }
 .chat-bubble.typing span:nth-child(3) { animation-delay: 0.3s; }
+/* Markdown inside chat bubbles */
+.chat-bubble p { margin: 0 0 12px; line-height: 1.6; }
+.chat-bubble p:last-child { margin: 0; }
+.chat-bubble strong { color: inherit; font-weight: 700; }
+.chat-bubble ul { margin: 6px 0; padding-left: 18px; }
+.chat-bubbleli { margin-bottom: 4px; }
 @keyframes dot { 0%, 80%, 100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
 @keyframes bubble-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .chat-summary { border-top: 1px solid var(--border); padding: 20px 28px; background: var(--gradient-soft); }

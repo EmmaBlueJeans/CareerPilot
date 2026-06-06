@@ -2,11 +2,13 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 import db
 import ai
 import config
+from flask_login import login_required, current_user
 
 bp = Blueprint("interview", __name__)
 
 
 @bp.route("/<int:session_id>")
+@login_required
 def chat(session_id):
     session = db.get_session(session_id, g.user_token)
     if not session:
@@ -23,6 +25,7 @@ def chat(session_id):
 
 
 @bp.route("/<int:session_id>/start", methods=["POST"])
+@login_required
 def start(session_id):
     session = db.get_session(session_id, g.user_token)
     if not session:
@@ -43,6 +46,7 @@ def start(session_id):
 
 
 @bp.route("/<int:session_id>/message", methods=["POST"])
+@login_required
 def send(session_id):
     session = db.get_session(session_id, g.user_token)
     if not session:
