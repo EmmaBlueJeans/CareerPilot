@@ -52,8 +52,8 @@ def register():
 
         user_dict = db.get_user_by_id(user_id)
         login_user(UserObject(user_dict))
-        flash("Account created! Welcome to CareerPilot.", "success")
-        return redirect(url_for("dashboard.index"))
+        flash("Account created! Please log in to continue.", "success")
+        return redirect(url_for("auth.login"))
 
     return render_template("auth/register.html")
 
@@ -90,3 +90,14 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("auth.login"))
+
+@bp.route("/delete-account", methods=["GET", "POST"])
+@login_required
+def delete_account():
+    if request.method == "POST":
+        user_id = current_user.id
+        logout_user()
+        db.delete_user(user_id)
+        flash("Your account and all data have been deleted.", "success")
+        return redirect(url_for("auth.register"))
+    return render_template("auth/delete_account.html")

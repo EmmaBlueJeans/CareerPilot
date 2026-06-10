@@ -257,4 +257,10 @@ def _hydrate_session(row):
             d[key] = []
     return d
 
-   
+def delete_user(user_id):
+    """Delete a user account and all their sessions."""
+    with transaction() as conn:
+        conn.execute(
+            "DELETE FROM users WHERE id = ?",
+            (user_id,)
+        )

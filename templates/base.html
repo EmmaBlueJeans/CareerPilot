@@ -35,12 +35,16 @@
             {% endif %}
         </div>
 
-        {% if current_user.is_authenticated %}
+                {% if current_user.is_authenticated %}
         <span style="font-size:13px; color:var(--text-2); margin-left:8px;">
             {{ current_user.email }}
         </span>
         <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost" style="font-size:13px; padding:6px 12px;">
             Log out
+        </a>
+        <a href="{{ url_for('auth.delete_account') }}"
+           style="font-size:11px; color:var(--text-3); margin-left:4px;">
+            Delete account
         </a>
         {% else %}
         <a href="{{ url_for('auth.login') }}" class="btn btn-ghost" style="font-size:13px; padding:6px 12px; margin-left:8px;">
