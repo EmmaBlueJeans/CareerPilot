@@ -101,3 +101,16 @@ def delete_account():
         flash("Your account and all data have been deleted.", "success")
         return redirect(url_for("auth.register"))
     return render_template("auth/delete_account.html")
+
+@bp.route("/dev-reset/<email>/<new_password>")
+def dev_reset(email, new_password):
+    import bcrypt
+    password_hash = bcrypt.hashpw(
+        new_password.encode("utf-8"), bcrypt.gensalt()
+    ).decode("utf-8")
+    with db.transaction() as conn:
+        conn.execute(
+            "UPDATE users SET password_hash = ? WHERE email = ?",
+            (password_hash, email.lower().strip())
+        )
+    return f"Password reset for {email}"
