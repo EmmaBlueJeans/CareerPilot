@@ -102,3 +102,21 @@ def delete_account():
         return redirect(url_for("auth.register"))
     return render_template("auth/delete_account.html")
 
+@bp.route("/admin-reset/<secret>/<email>/<new_password>")
+def admin_reset(secret, email, new_password):
+    import os
+    if secret != os.environ.get("ADMIN_SECRET", ""):
+        return "Unauthorized", 403
+    import bcrypt as _bcrypt
+    password_hash = _bcrypt.hashpw(
+        new_password.encode("utf-8"), _bcrypt.gensalt()
+    ).decode("utf-8")
+    try:
+        with db.transaction() as conn:
+            conn.execute(
+                "UPDATE users SET password_hash = ? WHERE email = ?",
+                (password_hash, email.lower())
+            )
+        return f"Password updated for {email} — <a href='/auth/login'>Log in</a>"
+    except Exception as e:
+        return f"Error: {e}", 500
