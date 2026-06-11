@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Delete account — CareerPilot{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <span class="eyebrow">Account settings</span>
+    <h1>Delete your account</h1>
+    <p class="page-sub">This will permanently delete your account and all screening history. This cannot be undone.</p>
+</div>
+
+<div class="card screen-form" style="max-width:460px; margin:0 auto;">
+    <p class="prose" style="margin-bottom:20px;">
+        Are you sure you want to delete your account? All your resume screenings, 
+        interview sessions, and history will be permanently removed.
+    </p>
+    <form method="POST" style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" type="button" 
+                onclick="window.history.back()">
+            Cancel
+        </button>
+        <button class="btn" type="submit" 
+                style="background:#dc2626; color:white; border:none; flex:1;">
+            Yes, delete my account
+        </button>
+    </form>
+</div>
+{% endblock %}
