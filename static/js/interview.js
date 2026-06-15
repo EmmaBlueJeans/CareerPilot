@@ -20,9 +20,12 @@
 }
 
     function bubble(role, content) {
+        console.log('BUBBLE CALLED:', role, JSON.stringify(content));
         const div = document.createElement('div');
         div.className = 'chat-bubble ' + role;
-        div.innerHTML = marked.parse(content);
+        const parsed = marked.parse(content);
+        console.log('PARSED RESULT:', JSON.stringify(parsed));
+        div.innerHTML = parsed;
         return div;
     }
 
