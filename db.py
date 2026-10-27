@@ -110,43 +110,35 @@ def create_session(user_token, payload):
         return cur.lastrowid
 
 
-def get_session(session_id, user_token):
+def get_session(session_id, user_id):
+    """Return a session only when it belongs to the authenticated user."""
     row = get_conn().execute(
-        "SELECT * FROM sessions WHERE id = ? AND user_token = ?",
-        (session_id, user_token),
+        "SELECT * FROM sessions WHERE id = ? AND user_id = ?",
+        (session_id, user_id),
     ).fetchone()
     return _hydrate_session(row) if row else None
 
 
-def list_sessions(user_token, limit=50, user_id=None):
-    if user_id:
-        rows = get_conn().execute(
-            """SELECT s.*, sm.score AS interview_score, sm.completed_at AS interview_completed_at
-               FROM sessions s
-               LEFT JOIN interview_summary sm ON sm.session_id = s.id
-               WHERE s.user_id = ?
-               ORDER BY s.created_at DESC
-               LIMIT ?""",
-            (user_id, limit),
-        ).fetchall()
-    else:
-        rows = get_conn().execute(
-            """SELECT s.*, sm.score AS interview_score, sm.completed_at AS interview_completed_at
-               FROM sessions s
-               LEFT JOIN interview_summary sm ON sm.session_id = s.id
-               WHERE s.user_token = ?
-               ORDER BY s.created_at DESC
-               LIMIT ?""",
-            (user_token, limit),
-        ).fetchall()
+def list_sessions(user_id, limit=50):
+    """List sessions belonging to the authenticated user."""
+    rows = get_conn().execute(
+        """SELECT s.*, sm.score AS interview_score, sm.completed_at AS interview_completed_at
+           FROM sessions s
+           LEFT JOIN interview_summary sm ON sm.session_id = s.id
+           WHERE s.user_id = ?
+           ORDER BY s.created_at DESC
+           LIMIT ?""",
+        (user_id, limit),
+    ).fetchall()
     return [_hydrate_session(r) for r in rows]
 
 
-def delete_session(session_id, user_token):
+def delete_session(session_id, user_id):
+    """Delete a session only when it belongs to the authenticated user."""
     with transaction() as conn:
         conn.execute(
-            "DELETE FROM sessions WHERE id = ? AND user_token = ?",
-            (session_id, user_token),
+            "DELETE FROM sessions WHERE id = ? AND user_id = ?",
+            (session_id, user_id),
         )
 
 
