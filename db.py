@@ -142,29 +142,6 @@ def delete_session(session_id, user_id):
         )
 
 
-def count_api_usage_today(user_id, usage_type):
-    """Count recorded API calls for a user during the current UTC day."""
-    return get_conn().execute(
-        """SELECT COUNT(*)
-           FROM api_usage
-           WHERE user_id = ?
-             AND usage_type = ?
-             AND created_at >= datetime('now', 'start of day')""",
-        (user_id, usage_type),
-    ).fetchone()[0]
-
-
-def record_api_usage(user_id, usage_type):
-    """Record one successful AI call independently of saved session history."""
-    if usage_type not in {"screen", "interview"}:
-        raise ValueError("Unknown API usage type.")
-    with transaction() as conn:
-        conn.execute(
-            "INSERT INTO api_usage (user_id, usage_type) VALUES (?, ?)",
-            (user_id, usage_type),
-        )
-
-
 def add_message(session_id, role, content):
     with transaction() as conn:
         conn.execute(
