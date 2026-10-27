@@ -36,6 +36,18 @@ def start(session_id):
     if db.message_count(session_id) > 0:
         return jsonify({"messages": db.get_messages(session_id)})
 
+    if (
+        db.count_interview_responses_today(current_user.id)
+        >= config.DAILY_INTERVIEW_RESPONSE_LIMIT
+    ):
+        return jsonify({
+            "error": (
+                "Daily demo limit reached "
+                f"({config.DAILY_INTERVIEW_RESPONSE_LIMIT} AI interview responses per account). "
+                "Please try again tomorrow."
+            )
+        }), 429
+
     try:
         opener = ai.interview_reply(session, history=[])
     except Exception as e:
@@ -53,6 +65,18 @@ def send(session_id):
         abort(404)
     if not ai.is_configured():
         return jsonify({"error": "AI is not configured."}), 500
+
+    if (
+        db.count_interview_responses_today(current_user.id)
+        >= config.DAILY_INTERVIEW_RESPONSE_LIMIT
+    ):
+        return jsonify({
+            "error": (
+                "Daily demo limit reached "
+                f"({config.DAILY_INTERVIEW_RESPONSE_LIMIT} AI interview responses per account). "
+                "Please try again tomorrow."
+            )
+        }), 429
 
     data = request.get_json(silent=True) or {}
     user_msg = (data.get("message") or "").strip()
