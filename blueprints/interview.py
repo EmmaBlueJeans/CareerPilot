@@ -67,7 +67,7 @@ def send(session_id):
     try:
         if assistant_question_count >= config.INTERVIEW_QUESTION_COUNT:
             wrap = ai.interview_reply(session, history=history, conclude=True)
-                db.save_summary(session_id, wrap["summary"], wrap["score"])
+            db.save_summary(session_id, wrap["summary"], wrap["score"])
             db.add_message(
                 session_id, "assistant",
                 f"Thanks — that wraps up the interview.\n\n**Summary:** {wrap['summary']}\n\n**Score:** {wrap['score']}/10",
