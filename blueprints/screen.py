@@ -18,17 +18,6 @@ def new():
 @bp.route("/", methods=["POST"])
 @login_required
 def create():
-    if (
-        ai.is_configured()
-        and db.count_api_usage_today(current_user.id, "screen") >= config.DAILY_SCREEN_LIMIT
-    ):
-        flash(
-            f"Daily demo limit reached ({config.DAILY_SCREEN_LIMIT} screenings per account). "
-            "Please try again tomorrow.",
-            "warning",
-        )
-        return redirect(url_for("screen.new"))
-
     job_text = (request.form.get("job_text") or "").strip()
     title    = (request.form.get("title")    or "").strip() or None
     file     = request.files.get("resume")
@@ -91,7 +80,6 @@ def create():
                 cmp_result["matched"],
                 cmp_result["missing"],
             )
-            db.record_api_usage(current_user.id, "screen")
         except Exception as e:
             flash(f"AI analysis unavailable: {e}", "warning")
 
