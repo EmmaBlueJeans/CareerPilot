@@ -18,6 +18,17 @@ def new():
 @bp.route("/", methods=["POST"])
 @login_required
 def create():
+    if (
+        ai.is_configured()
+        and db.count_sessions_today(current_user.id) >= config.DAILY_SCREEN_LIMIT
+    ):
+        flash(
+            f"Daily demo limit reached ({config.DAILY_SCREEN_LIMIT} screenings per account). "
+            "Please try again tomorrow.",
+            "warning",
+        )
+        return redirect(url_for("screen.new"))
+
     job_text = (request.form.get("job_text") or "").strip()
     title    = (request.form.get("title")    or "").strip() or None
     file     = request.files.get("resume")
