@@ -83,6 +83,22 @@ CareerPilot/
 
 ---
 
+## Engineering decisions
+
+Several technical decisions were shaped by integration, hosting, and project-timeline constraints:
+
+**Integration architecture** — Tanzul's interview project was already structured as a Flask app factory with blueprints, making it the natural base for the merge. Emma's resume screener was restructured to fit that pattern rather than the reverse. This kept the combined codebase coherent but required retrofitting authentication, database schema changes, and session ownership after integration was underway.
+
+**spaCy to regex fallback on Render** — The original screener used spaCy's `PhraseMatcher` for skill extraction. Although the language model worked locally, it exceeded the memory available on Render's free tier during screening requests. The `DISABLE_SPACY` environment variable now selects a regex-based fallback at runtime, allowing production to remain within its memory limit while keeping spaCy available as an optional local-development path.
+
+**Claude prompt engineering** — Producing consistent structured JSON required several prompt iterations. Important decisions included setting `temperature=0`, placing the job description before the resume to reduce classification drift, and explicitly excluding eligibility gates—such as citizenship, security clearance, degree requirements, and minimum years of experience—from skill scoring.
+
+**SQLite on ephemeral storage** — Render's free tier does not guarantee filesystem persistence across restarts or deployments. Rather than migrate databases during the Capstone timeline, the team accepted SQLite as a documented prototype constraint. The tradeoff is that account and session data can be lost; migration to Supabase or Render PostgreSQL is the identified next step.
+
+**Authentication added mid-project** — Flask-Login was added after the core screening and interview features were working. The retrofit introduced a users table, password hashing, protected routes, account deletion, and user linkage for saved sessions. It also exposed an inconsistency between the original anonymous browser-token ownership model and authenticated user IDs; consolidating all session access around user IDs is the next cleanup item. The central lesson was that authentication and data ownership are easier to design from the beginning than to retrofit later.
+
+---
+
 ## Local setup
 
 **Prerequisites:** Python 3.11+
