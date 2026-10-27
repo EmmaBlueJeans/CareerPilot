@@ -37,7 +37,7 @@ def start(session_id):
         return jsonify({"messages": db.get_messages(session_id)})
 
     if (
-        db.count_interview_responses_today(current_user.id)
+        db.count_api_usage_today(current_user.id, "interview")
         >= config.DAILY_INTERVIEW_RESPONSE_LIMIT
     ):
         return jsonify({
@@ -50,6 +50,7 @@ def start(session_id):
 
     try:
         opener = ai.interview_reply(session, history=[])
+        db.record_api_usage(current_user.id, "interview")
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -67,7 +68,7 @@ def send(session_id):
         return jsonify({"error": "AI is not configured."}), 500
 
     if (
-        db.count_interview_responses_today(current_user.id)
+        db.count_api_usage_today(current_user.id, "interview")
         >= config.DAILY_INTERVIEW_RESPONSE_LIMIT
     ):
         return jsonify({
@@ -91,6 +92,7 @@ def send(session_id):
     try:
         if assistant_question_count >= config.INTERVIEW_QUESTION_COUNT:
             wrap = ai.interview_reply(session, history=history, conclude=True)
+            db.record_api_usage(current_user.id, "interview")
             db.save_summary(session_id, wrap["summary"], wrap["score"])
             db.add_message(
                 session_id, "assistant",
@@ -104,6 +106,7 @@ def send(session_id):
             })
 
         reply = ai.interview_reply(session, history=history, user_message=None)
+        db.record_api_usage(current_user.id, "interview")
         db.add_message(session_id, "assistant", reply)
         return jsonify({"messages": db.get_messages(session_id), "concluded": False})
     except Exception as e:
