@@ -56,7 +56,7 @@ CareerPilot/
 ├── ai.py                   # Claude API calls for screening and interviews
 ├── pdf_utils.py            # PDF text extraction via pdfplumber
 ├── nlp_utils.py            # Keyword matching and weighted scoring
-├── schema.sql              # Database schema — four tables
+├── schema.sql              # Database schema — five tables
 ├── blueprints/
 │   ├── auth.py             # Registration, login, logout, account deletion
 │   ├── dashboard.py        # / — dashboard and recent sessions
@@ -97,7 +97,7 @@ Several technical decisions were shaped by integration, hosting, and project-tim
 
 **Authentication added mid-project** — Flask-Login was added after the core screening and interview features were working. The retrofit introduced a users table, password hashing, protected routes, account deletion, and user linkage for saved sessions. The retrofit also exposed an inconsistency between the original anonymous browser-token ownership model and authenticated user IDs. Session authorization now consistently uses authenticated user IDs, while the legacy token column remains temporarily for schema compatibility. The central lesson was that authentication and data ownership are easier to design from the beginning than to retrofit later.
 
-**Layered API cost controls** — The public demo combines a provider-side monthly spending limit with application-level per-account quotas. By default, each account can run three screenings and receive fifteen AI interview responses per UTC day. The application limits reduce casual misuse, while the provider spending limit remains the hard financial backstop. Both application limits are configurable through environment variables.
+**Layered API cost controls** — The public demo combines a provider-side monthly spending limit with application-level per-account quotas. By default, each account can run three screenings and receive fifteen AI interview responses per UTC day. Successful API calls are recorded in a separate usage ledger, so deleting a session or resetting an interview does not reset the quota. The application limits reduce casual misuse, while the provider spending limit remains the hard financial backstop. Both application limits are configurable through environment variables.
 
 ---
 
