@@ -18,9 +18,3 @@ INTERVIEW_MODEL = "claude-haiku-4-5-20251001"
 
 MAX_PDF_BYTES = 5 * 1024 * 1024
 INTERVIEW_QUESTION_COUNT = 5
-
-# Per-account daily safeguards for the public portfolio demo.
-DAILY_SCREEN_LIMIT = int(os.environ.get("DAILY_SCREEN_LIMIT", "3"))
-DAILY_INTERVIEW_RESPONSE_LIMIT = int(
-    os.environ.get("DAILY_INTERVIEW_RESPONSE_LIMIT", "15")
-)
