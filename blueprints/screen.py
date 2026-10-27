@@ -125,7 +125,7 @@ def create():
 @bp.route("/<int:session_id>")
 @login_required
 def result(session_id):
-    session = db.get_session(session_id, g.user_token)
+    session = db.get_session(session_id, current_user.id)
     if not session:
         abort(404)
     summary   = db.get_summary(session_id)
