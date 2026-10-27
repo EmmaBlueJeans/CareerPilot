@@ -95,7 +95,7 @@ Several technical decisions were shaped by integration, hosting, and project-tim
 
 **SQLite on ephemeral storage** — Render's free tier does not guarantee filesystem persistence across restarts or deployments. Rather than migrate databases during the Capstone timeline, the team accepted SQLite as a documented prototype constraint. The tradeoff is that account and session data can be lost; migration to Supabase or Render PostgreSQL is the identified next step.
 
-**Authentication added mid-project** — Flask-Login was added after the core screening and interview features were working. The retrofit introduced a users table, password hashing, protected routes, account deletion, and user linkage for saved sessions. It also exposed an inconsistency between the original anonymous browser-token ownership model and authenticated user IDs; consolidating all session access around user IDs is the next cleanup item. The central lesson was that authentication and data ownership are easier to design from the beginning than to retrofit later.
+**Authentication added mid-project** — Flask-Login was added after the core screening and interview features were working. The retrofit introduced a users table, password hashing, protected routes, account deletion, and user linkage for saved sessions. The retrofit also exposed an inconsistency between the original anonymous browser-token ownership model and authenticated user IDs. Session authorization now consistently uses authenticated user IDs, while the legacy token column remains temporarily for schema compatibility. The central lesson was that authentication and data ownership are easier to design from the beginning than to retrofit later.
 
 ---
 
