@@ -142,6 +142,30 @@ def delete_session(session_id, user_id):
         )
 
 
+def count_sessions_today(user_id):
+    """Count screening sessions created by a user during the current UTC day."""
+    return get_conn().execute(
+        """SELECT COUNT(*)
+           FROM sessions
+           WHERE user_id = ?
+             AND created_at >= datetime('now', 'start of day')""",
+        (user_id,),
+    ).fetchone()[0]
+
+
+def count_interview_responses_today(user_id):
+    """Count AI interview responses generated for a user during the current UTC day."""
+    return get_conn().execute(
+        """SELECT COUNT(*)
+           FROM interview_messages m
+           JOIN sessions s ON s.id = m.session_id
+           WHERE s.user_id = ?
+             AND m.role = 'assistant'
+             AND m.created_at >= datetime('now', 'start of day')""",
+        (user_id,),
+    ).fetchone()[0]
+
+
 def add_message(session_id, role, content):
     with transaction() as conn:
         conn.execute(
