@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, g, abort
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, abort
 import db
 import ai
 import config
@@ -10,7 +10,7 @@ bp = Blueprint("interview", __name__)
 @bp.route("/<int:session_id>")
 @login_required
 def chat(session_id):
-    session = db.get_session(session_id, g.user_token)
+    session = db.get_session(session_id, current_user.id)
     if not session:
         abort(404)
     messages = db.get_messages(session_id)
@@ -27,7 +27,7 @@ def chat(session_id):
 @bp.route("/<int:session_id>/start", methods=["POST"])
 @login_required
 def start(session_id):
-    session = db.get_session(session_id, g.user_token)
+    session = db.get_session(session_id, current_user.id)
     if not session:
         abort(404)
     if not ai.is_configured():
@@ -48,7 +48,7 @@ def start(session_id):
 @bp.route("/<int:session_id>/message", methods=["POST"])
 @login_required
 def send(session_id):
-    session = db.get_session(session_id, g.user_token)
+    session = db.get_session(session_id, current_user.id)
     if not session:
         abort(404)
     if not ai.is_configured():
@@ -87,8 +87,9 @@ def send(session_id):
 
 
 @bp.route("/<int:session_id>/reset", methods=["POST"])
+@login_required
 def reset(session_id):
-    session = db.get_session(session_id, g.user_token)
+    session = db.get_session(session_id, current_user.id)
     if not session:
         abort(404)
     conn = db.get_conn()
