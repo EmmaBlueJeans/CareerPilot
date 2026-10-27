@@ -2,7 +2,7 @@
 
 An end-to-end career preparation tool: AI-powered resume screening and tailored mock interview practice in a single Flask app.
 
-**Live application:** [careerpilot-9wif.onrender.com](https://careerpilot-9wif.onrender.com/)
+**Live application:** [resume-screener-uo9b.onrender.com](https://resume-screener-uo9b.onrender.com/)
 
 ---
 
@@ -42,7 +42,7 @@ The model runs at `temperature=0` for consistency and is instructed not to class
 | Database | SQLite via Python `sqlite3` |
 | Authentication | Flask-Login with bcrypt password hashing |
 | Frontend | Jinja2 templates, vanilla JavaScript, custom CSS with dark/light mode |
-| Hosting | Render — [careerpilot-9wif.onrender.com](https://careerpilot-9wif.onrender.com/) |
+| Hosting | Render — [resume-screener-uo9b.onrender.com](https://resume-screener-uo9b.onrender.com/) |
 
 ---
 
