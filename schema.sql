@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_token, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS interview_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
