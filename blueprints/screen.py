@@ -20,7 +20,7 @@ def new():
 def create():
     if (
         ai.is_configured()
-        and db.count_sessions_today(current_user.id) >= config.DAILY_SCREEN_LIMIT
+        and db.count_api_usage_today(current_user.id, "screen") >= config.DAILY_SCREEN_LIMIT
     ):
         flash(
             f"Daily demo limit reached ({config.DAILY_SCREEN_LIMIT} screenings per account). "
@@ -91,6 +91,7 @@ def create():
                 cmp_result["matched"],
                 cmp_result["missing"],
             )
+            db.record_api_usage(current_user.id, "screen")
         except Exception as e:
             flash(f"AI analysis unavailable: {e}", "warning")
 
