@@ -52,8 +52,8 @@ def register():
 
         user_dict = db.get_user_by_id(user_id)
         login_user(UserObject(user_dict))
-        flash("Account created! Please log in to continue.", "success")
-        return redirect(url_for("auth.login"))
+        flash("Account created. Welcome to CareerPilot!", "success")
+        return redirect(url_for("dashboard.index"))
 
     return render_template("auth/register.html")
 
