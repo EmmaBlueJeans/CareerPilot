@@ -73,14 +73,3 @@ CREATE TABLE IF NOT EXISTS interview_summary (
     completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
 );
-
-CREATE TABLE IF NOT EXISTS api_usage (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    usage_type TEXT NOT NULL CHECK (usage_type IN ('screen', 'interview')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_api_usage_user_day
-    ON api_usage(user_id, usage_type, created_at DESC);
