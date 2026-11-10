@@ -177,7 +177,6 @@ and return your full JSON analysis."""
     response = get_client().messages.create(
         model=config.SCREEN_MODEL,
         max_tokens=2000,
-        temperature=0,
         system=SCREEN_SYSTEM,
         messages=[{"role": "user", "content": user}],
     )
